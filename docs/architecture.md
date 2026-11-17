@@ -30,13 +30,13 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 Record your plan here before editing code.
 
-- **Presentation tier decision**: React components for Activities, Teams, Leaderboard, and Workout Suggestions sections with loading/empty/error states. Use `src/api/client.ts` for all API calls. Fetch user email from query param or component state for workout suggestions.
-- **Logic tier decision**: Express routes in `src/routes` with dedicated service functions in `src/services`. Route handlers validate input and delegate to services. Services handle business logic and data transformations.
-- **Data tier decision**: Mongoose schemas for User, Team, Activity, and Workout with schema-level validation for required fields. Seed data via `src/scripts/seed.ts` using upserts.
-- **Activity tracking approach**: POST route validates userId and teamId exist in database (return 400 if not). Service computes `points` based on activity type and stores `occurredAt` as current timestamp. GET returns all activities populated with user and team details.
-- **Team management approach**: POST route requires `name` field (return 400 if missing), accepts optional `mascot`. Service stores team and initializes empty `members` array. GET returns all teams with populated member references.
-- **Leaderboard approach**: GET route aggregates activities by team, sums points, orders by total descending, and assigns 1-based ranks. Returns `{ leaderboard: [{ teamName, totalPoints, rank }, ...] }`.
-- **Workout suggestions approach**: GET route matches userEmail to seeded User record (return 404 if not found). Service analyzes user's recent activities, matches activity type to focus (e.g., "running" → "endurance"), and returns first suggestion with matching focus and explanatory reason.
+- Presentation tier decision: React components for Activities, Teams, Leaderboard, and Workout Suggestions sections with loading/empty/error states. Use `src/api/client.ts` for all API calls. Fetch user email from query param or component state for workout suggestions.
+- Logic tier decision: Express routes in `src/routes` with dedicated service functions in `src/services`. Route handlers validate input and delegate to services. Services handle business logic and data transformations.
+- Data tier decision: Mongoose schemas for User, Team, Activity, and Workout with schema-level validation for required fields. Seed data via `src/scripts/seed.ts` using upserts.
+- Activity tracking approach: POST route validates userId and teamId exist in database (return 400 if not). Service computes `points` based on activity type and stores `occurredAt` as current timestamp. GET returns all activities populated with user and team details.
+- Team management approach: POST route requires `name` field (return 400 if missing), accepts optional `mascot`. Service stores team and initializes empty `members` array. GET returns all teams with populated member references.
+- Leaderboard approach: GET route aggregates activities by team, sums points, orders by total descending, and assigns 1-based ranks. Returns `{ leaderboard: [{ teamName, totalPoints, rank }, ...] }`.
+- Workout suggestions approach: GET route matches userEmail to seeded User record (return 404 if not found). Service analyzes user's recent activities, matches activity type to focus (e.g., "running" → "endurance"), and returns first suggestion with matching focus and explanatory reason.
 
 ## Test plan
 
