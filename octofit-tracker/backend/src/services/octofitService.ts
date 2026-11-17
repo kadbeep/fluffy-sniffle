@@ -72,9 +72,19 @@ export async function createTeam(input: unknown): Promise<unknown> {
     throw Object.assign(error, { status: 400 });
   }
 
+  if (!data.mascot) {
+    const error = new Error('Missing required field: mascot');
+    throw Object.assign(error, { status: 400 });
+  }
+
+  if (typeof data.mascot !== 'string') {
+    const error = new Error('Field mascot must be a string');
+    throw Object.assign(error, { status: 400 });
+  }
+
   const team = await Team.create({
     name: data.name,
-    mascot: data.mascot ?? undefined,
+    mascot: data.mascot,
     members: (Array.isArray(data.members) ? data.members : []) as string[],
   });
 
@@ -98,11 +108,18 @@ export async function getLeaderboard() {
   const teams = await Team.find({ _id: { $in: teamStats.map(stat => stat._id) } }).lean();
   const teamMap = new Map(teams.map(team => [team._id.toString(), team.name]));
 
-  const leaderboard = teamStats.map((stat, index) => ({
-    teamName: teamMap.get(stat._id.toString()),
-    totalPoints: stat.totalPoints,
-    rank: index + 1,
-  }));
+  const leaderboard = teamStats
+    .map((stat, index) => {
+      const teamName = teamMap.get(stat._id.toString());
+      return teamName
+        ? {
+            teamName,
+            totalPoints: stat.totalPoints,
+            rank: index + 1,
+          }
+        : null;
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
   return leaderboard;
 }
