@@ -30,20 +30,32 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 Record your plan here before editing code.
 
-- Presentation tier decision:
-- Logic tier decision:
-- Data tier decision:
-- Activity tracking approach:
-- Team management approach:
-- Leaderboard approach:
-- Workout suggestions approach:
+- Presentation tier decision: React components for Activities, Teams, Leaderboard, and Workout Suggestions sections with loading/empty/error states. Use `src/api/client.ts` for all API calls. Fetch user email from query param or component state for workout suggestions.
+- Logic tier decision: Express routes in `src/routes` with dedicated service functions in `src/services`. Route handlers validate input and delegate to services. Services handle business logic and data transformations.
+- Data tier decision: Mongoose schemas for User, Team, Activity, and Workout with schema-level validation for required fields. Seed data via `src/scripts/seed.ts` using upserts.
+- Activity tracking approach: POST route validates userId and teamId exist in database (return 400 if not). Service computes `points` based on activity type and stores `occurredAt` as current timestamp. GET returns all activities populated with user and team details.
+- Team management approach: POST route requires `name` field (return 400 if missing), accepts optional `mascot`. Service stores team and initializes empty `members` array. GET returns all teams with populated member references.
+- Leaderboard approach: GET route aggregates activities by team, sums points, orders by total descending, and assigns 1-based ranks. Returns `{ leaderboard: [{ teamName, totalPoints, rank }, ...] }`.
+- Workout suggestions approach: GET route matches userEmail to seeded User record (return 404 if not found). Service analyzes user's recent activities, matches activity type to focus (e.g., "running" → "endurance"), and returns first suggestion with matching focus and explanatory reason.
 
 ## Test plan
 
 Record the commands you run and what each failure means.
 
-- Data-tier command: `npm run test:data --prefix octofit-tracker/backend`
-- API command: `npm run test:api --prefix octofit-tracker/backend`
-- Frontend command: `npm test --prefix octofit-tracker/frontend`
-- Backend build command: `npm run build --prefix octofit-tracker/backend`
-- Frontend build command: `npm run build --prefix octofit-tracker/frontend`
+- **Data-tier command**: `npm run test:data --prefix octofit-tracker/backend`
+  - Current failures: User, Team, Activity, Workout schemas missing required field validators
+  - After fix: All 5 tests pass when schemas define validators for name, email, fitnessGoal (User); name, mascot (Team); type, user, team, minutes (Activity); and focus, minutes, difficulty (Workout)
+
+- **API command**: `npm run test:api --prefix octofit-tracker/backend`
+  - Current failures: POST /api/activities returns 501; POST /api/teams returns 501; GET /api/leaderboard returns empty array; GET /api/workouts/suggestions returns wrong focus
+  - After fix: Routes implemented, validation returns 400 for missing/invalid fields, services compute correct points and rank, suggestions match user's recent activity patterns
+
+- **Frontend command**: `npm test --prefix octofit-tracker/frontend`
+  - Current failures: All 15 tests fail because components show "Implementation pending" placeholder
+  - After fix: Components fetch and display activity list, team list with members, leaderboard with ranks, and personalized workout suggestions; loading and error states render; form submissions create records
+
+- **Backend build command**: `npm run build --prefix octofit-tracker/backend`
+  - Validates TypeScript compilation and type safety for routes/services
+
+- **Frontend build command**: `npm run build --prefix octofit-tracker/frontend`
+  - Validates React component compilation and Vite bundling
